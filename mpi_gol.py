@@ -20,7 +20,6 @@ def step(cells):
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
-print(rank)
 
 # 12 is so there is space for the cells from other ranks after communication
 cells = np.zeros((10, 12))
@@ -38,10 +37,10 @@ for i in range(60):
     #################################################
     left_to_send = cells[:, 1].copy()
     right_to_send = cells[:, -2].copy()
-    if rank == 0:
-        print(right_to_send)
+
     new_left = np.empty(10, dtype="int")
     new_right = np.empty(10, dtype="int")
+
     # send left, receive right
     comm.Sendrecv(
         left_to_send,
@@ -49,14 +48,14 @@ for i in range(60):
         recvbuf=new_right,
         source=(rank + 1) % size,
     )
+    # send right, receive left
     comm.Sendrecv(
         right_to_send,
         dest=(rank + 1) % size,
         recvbuf=new_left,
         source=(rank - 1) % size,
     )
-    if rank == 1:
-        print(new_left)
+
     cells[:, 0] = new_left
     cells[:, -1] = new_right
 
@@ -65,9 +64,6 @@ for i in range(60):
 # Plot results, duck should be in 4th rank
 fig = plt.figure()
 ax = plt.axes()
-# ax.matshow(cells[:, 1:11])
-ax.matshow(cells)
+ax.matshow(cells[:, 1:11])
 filename = "PlotRank" + str(rank) + ".png"
 plt.savefig(filename)
-print(f"[{rank}]")
-print(cells)

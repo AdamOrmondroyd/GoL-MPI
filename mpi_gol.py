@@ -38,26 +38,26 @@ for i in range(60):
     left_to_send = cells[:, 1].copy()
     right_to_send = cells[:, -2].copy()
 
-    new_left = np.empty(10, dtype="int")
-    new_right = np.empty(10, dtype="int")
+    left_to_receive = np.empty(10, dtype="int")
+    right_to_receive = np.empty(10, dtype="int")
 
     # send left, receive right
     comm.Sendrecv(
         left_to_send,
         dest=(rank - 1) % size,
-        recvbuf=new_right,
+        recvbuf=right_to_receive,
         source=(rank + 1) % size,
     )
     # send right, receive left
     comm.Sendrecv(
         right_to_send,
         dest=(rank + 1) % size,
-        recvbuf=new_left,
+        recvbuf=left_to_receive,
         source=(rank - 1) % size,
     )
 
-    cells[:, 0] = new_left
-    cells[:, -1] = new_right
+    cells[:, 0] = left_to_receive
+    cells[:, -1] = right_to_receive
 
     # cells = step(cells) # step after
 
